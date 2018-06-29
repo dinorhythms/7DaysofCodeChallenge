@@ -1,37 +1,136 @@
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/7DaysofCodeChallenge/sw.js', {scope: '/7DaysofCodeChallenge/'})
+    .then(function(reg) {
+      // registration worked
+      console.log('Registration succeeded. Scope is ' + reg.scope);
+      
+    }).catch(function(error) {
+      // registration failed
+      console.log('Registration failed with ' + error);
+    });
+
+    createDB ();
+} 
+
+// IndexedDB
+function createDB (){
+    // Add DB
+    let indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
+    let IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+    let db;
+  
+    // Open (or create) the database
+    let request = indexedDB.open("CurrencyDB", 1);
+  
+    request.onsuccess = function (evt) {
+        let db = request.result;                                                            
+    };
+  
+  
+    request.onerror = function (evt) {
+        console.log("IndexedDB error: " + evt.target.errorCode);
+    };
+  
+    // Create the schema
+    request.onupgradeneeded = function (evt) {                   
+        const countries = evt.currentTarget.result.createObjectStore( "countries", { keyPath: "id", autoIncrement: true });
+        const currency  = evt.currentTarget.result.createObjectStore( "currency", { keyPath: "id" });
+    };
+};
+
 const currency1 = document.getElementById('fromCurrency');
 const currency2 = document.getElementById('toCurrency');
 
 const geturl = 'https://free.currencyconverterapi.com/api/v5/currencies';
 
-fetch(geturl)
-    .then((response) => response.json())
-    .then((data) => {
+//get records in db to display
+let dbrequest = indexedDB.open("CurrencyDB", 1);
 
-        let countries = data.results;
+dbrequest.onsuccess = function (evt) {
 
-        for (var key in countries) {
-            if (countries.hasOwnProperty(key)) {
+    let db = dbrequest.result;
+    let transaction = db.transaction("countries", "readwrite");
+    let dbcountries = transaction.objectStore("countries");
+    let countRequest = dbcountries.count();
 
-                //CREATE A SELECT OPTION AND ASSIGN VALUES
-                var option      = document.createElement("option");
-                option.text     = countries[key].id;
-                option.value    = countries[key].id;
-                //APPEND TO PARENT
-                currency1.appendChild(option);
-                
-                //CREATE A SELECT OPTION AND ASSIGN VALUES
-                var option      = document.createElement("option");
-                option.text     = countries[key].id;
-                option.value    = countries[key].id;
-                //APPEND TO PARENT
-                currency2.appendChild(option);
+    countRequest.onsuccess = function () {
+        
+        if(countRequest.result === 0) {
+
+            // No Record in DB, fetch record.
+            fetch(geturl)
+                .then((response) => response.json())
+                .then((data) => {
+
+                    let countries = data.results;
+
+                    for (var key in countries) {
+                        if (countries.hasOwnProperty(key)) {
+
+                            //CREATE A SELECT OPTION AND ASSIGN VALUES
+                            var option      = document.createElement("option");
+                            option.text     = countries[key].id;
+                            option.value    = countries[key].id;
+                            //APPEND TO PARENT
+                            currency1.appendChild(option);
+                            
+                            //CREATE A SELECT OPTION AND ASSIGN VALUES
+                            var option      = document.createElement("option");
+                            option.text     = countries[key].id;
+                            option.value    = countries[key].id;
+                            //APPEND TO PARENT
+                            currency2.appendChild(option);
+
+                            //Add to DB
+                            let transaction2 = db.transaction("countries", "readwrite");
+                            let addcountries = transaction2.objectStore("countries");
+                            addcountries.put(countries[key]);
+                        }
+                    }
+
+                })
+                .catch((error) => {
+                    console.log('Request failed', error)
+                });
+        } else {
+            // Return DB Data
+            let transaction2 = db.transaction("countries", "readwrite");
+            let getcountries = transaction2.objectStore("countries");
+            let getRequest   = getcountries.getAll();
+
+            getRequest.onsuccess = function () {
+                // console.log(getRequest.result);
+
+                let countries = getRequest.result;
+
+                for (var key in countries) {
+                    if (countries.hasOwnProperty(key)) {
+
+                        //CREATE A SELECT OPTION AND ASSIGN VALUES
+                        var option      = document.createElement("option");
+                        option.text     = countries[key].id;
+                        option.value    = countries[key].id;
+                        //APPEND TO PARENT
+                        currency1.appendChild(option);
+                        
+                        //CREATE A SELECT OPTION AND ASSIGN VALUES
+                        var option      = document.createElement("option");
+                        option.text     = countries[key].id;
+                        option.value    = countries[key].id;
+                        //APPEND TO PARENT
+                        currency2.appendChild(option);
+
+                        //Add to DB
+                        let transaction2 = db.transaction("countries", "readwrite");
+                        let addcountries = transaction2.objectStore("countries");
+                        addcountries.put(countries[key]);
+                    }
+                }
             }
         }
-
-    })
-    .catch((error) => {
-        console.log('Request failed', error)
-});
+        
+    }
+};
 
 document.getElementById("convertbtn").onclick = function () { 
 
@@ -44,31 +143,73 @@ document.getElementById("convertbtn").onclick = function () {
     var query = fromCurrency + '_' + toCurrency;
 
     var url = 'https://free.currencyconverterapi.com/api/v5/convert?q='+ query;
-    
-    fetch(url)
-        .then((response) => response.json())
-        .then((data) => {
 
-            let record = data.results;
-            let result = record[query];
+    //Check if available in DB first
+    let db = dbrequest.result;
+    let transaction3 = db.transaction("currency", "readwrite");
+    let dbcurrency = transaction3.objectStore("currency");
+    let currencyRequest = dbcurrency.get(fromCurrency + '_' + toCurrency);
 
+    currencyRequest.onsuccess= () => {
+        // console.log(currencyRequest.result);
+        if (currencyRequest.result != undefined) {
+            
+            // console.log('ID exists', currencyRequest.result);
+            let result = currencyRequest.result;
+
+            //Work on data
             let val = result.val;
             let cur = result.to;
             
             if (val) {
                 let total = val * amount;
                 let converted_amount = (Math.round(total * 100) / 100);
-                console.log(data);
+                // console.log(data);
                 document.getElementById("result_box").innerHTML = cur+' '+converted_amount;
             } else {
                 let err = new Error("Value not found for " + query);
                 console.log(err);
             }
 
-        })
-        .catch((error) => {
-            console.log('Request failed', error)
-        });
+        } else {
+            
+            // No Record Then fetch and add
+            fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+
+                let record = data.results;
+                let result = record[query];
+
+                //Work on data
+                let val = result.val;
+                let cur = result.to;
+                
+                if (val) {
+                    let total = val * amount;
+                    let converted_amount = (Math.round(total * 100) / 100);
+                    // console.log(data);
+                    document.getElementById("result_box").innerHTML = cur+' '+converted_amount;
+                } else {
+                    let err = new Error("Value not found for " + query);
+                    console.log(err);
+                }
+                
+                //Add to db
+                let transaction2 = db.transaction("currency", "readwrite");
+                let addcurrency = transaction2.objectStore("currency");
+                addcurrency.put(result);
+            })
+
+        }
+    }
+
+    if (dbcurrency.get(query).onsuccess) {
+        
+
+    } else {
+        
+    }
 
 };
 
