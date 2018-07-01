@@ -105,18 +105,18 @@ dbrequest.onsuccess = function (evt) {
 
                 let countries = getRequest.result;
 
-                for (let key in countries) {
+                for (var key in countries) {
                     if (countries.hasOwnProperty(key)) {
 
                         //CREATE A SELECT OPTION AND ASSIGN VALUES
-                        let option      = document.createElement("option");
+                        var option      = document.createElement("option");
                         option.text     = countries[key].id+' '+countries[key].currencyName;
                         option.value    = countries[key].id;
                         //APPEND TO PARENT
                         currency1.appendChild(option);
                         
                         //CREATE A SELECT OPTION AND ASSIGN VALUES
-                        let option      = document.createElement("option");
+                        var option      = document.createElement("option");
                         option.text     = countries[key].id+' '+countries[key].currencyName;
                         option.value    = countries[key].id;
                         //APPEND TO PARENT
