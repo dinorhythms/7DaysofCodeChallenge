@@ -66,7 +66,7 @@ dbrequest.onsuccess = function (evt) {
 
                     let countries = data.results;
 
-                    for (var key in countries) {
+                    for (let key in countries) {
                         if (countries.hasOwnProperty(key)) {
 
                             //CREATE A SELECT OPTION AND ASSIGN VALUES
@@ -77,7 +77,7 @@ dbrequest.onsuccess = function (evt) {
                             currency1.appendChild(option);
                             
                             //CREATE A SELECT OPTION AND ASSIGN VALUES
-                            var option      = document.createElement("option");
+                            let option      = document.createElement("option");
                             option.text     = countries[key].id+' '+countries[key].currencyName;
                             option.value    = countries[key].id;
                             //APPEND TO PARENT
@@ -105,18 +105,18 @@ dbrequest.onsuccess = function (evt) {
 
                 let countries = getRequest.result;
 
-                for (var key in countries) {
+                for (let key in countries) {
                     if (countries.hasOwnProperty(key)) {
 
                         //CREATE A SELECT OPTION AND ASSIGN VALUES
-                        var option      = document.createElement("option");
+                        let option      = document.createElement("option");
                         option.text     = countries[key].id+' '+countries[key].currencyName;
                         option.value    = countries[key].id;
                         //APPEND TO PARENT
                         currency1.appendChild(option);
                         
                         //CREATE A SELECT OPTION AND ASSIGN VALUES
-                        var option      = document.createElement("option");
+                        let option      = document.createElement("option");
                         option.text     = countries[key].id+' '+countries[key].currencyName;
                         option.value    = countries[key].id;
                         //APPEND TO PARENT
@@ -142,9 +142,9 @@ document.getElementById("convertbtn").onclick = function () {
 
     fromCurrency = encodeURIComponent(fromCurrency);
     toCurrency = encodeURIComponent(toCurrency);
-    var query = fromCurrency + '_' + toCurrency;
+    let query = fromCurrency + '_' + toCurrency;
 
-    var url = 'https://free.currencyconverterapi.com/api/v5/convert?q='+ query;
+    let url = 'https://free.currencyconverterapi.com/api/v5/convert?q='+ query;
 
     //Check if available in DB first
     let db = dbrequest.result;
@@ -240,14 +240,14 @@ window.addEventListener('online', function(e) {
                 if (countries.hasOwnProperty(key)) {
 
                     //CREATE A SELECT OPTION AND ASSIGN VALUES
-                    var option      = document.createElement("option");
+                    let option      = document.createElement("option");
                     option.text     = countries[key].id+' '+countries[key].currencyName;
                     option.value    = countries[key].id;
                     //APPEND TO PARENT
                     currency1.appendChild(option);
                     
                     //CREATE A SELECT OPTION AND ASSIGN VALUES
-                    var option      = document.createElement("option");
+                    let option      = document.createElement("option");
                     option.text     = countries[key].id+' '+countries[key].currencyName;
                     option.value    = countries[key].id;
                     //APPEND TO PARENT
