@@ -20,7 +20,7 @@ function createDB (){
     // Create the schema
     request.onupgradeneeded = function (evt) {                   
         const countries = evt.currentTarget.result.createObjectStore( "countries", { keyPath: "id", autoIncrement: true });
-        const currency  = evt.currentTarget.result.createObjectStore( "currency", { keyPath: "id" });
+        const currency  = evt.currentTarget.result.createObjectStore( "currency", { keyPath: "id"});
     };
 };
 
@@ -215,4 +215,97 @@ document.getElementById("convertbtn").onclick = function () {
 
 };
 
+// Check if user is online to update records
+window.addEventListener('online', function(e) {
+    
+    console.log('Back Online');
+
+    //Add to DB
+    let dbrequest = indexedDB.open("CurrencyDB", 1);
+
+    //fetch new country data and update in indexDB and DOM
+    fetch(geturl)
+    .then((response) => response.json())
+    .then((data) => {
+
+        let countries = data.results;
+
+        dbrequest.onsuccess = function (evt) {
+
+            let db = dbrequest.result;
+            let transaction2 = db.transaction("countries", "readwrite");
+            let addcountries = transaction2.objectStore("countries");
+            
+            for (var key in countries) {
+                if (countries.hasOwnProperty(key)) {
+
+                    //CREATE A SELECT OPTION AND ASSIGN VALUES
+                    var option      = document.createElement("option");
+                    option.text     = countries[key].id+' '+countries[key].currencyName;
+                    option.value    = countries[key].id;
+                    //APPEND TO PARENT
+                    currency1.appendChild(option);
+                    
+                    //CREATE A SELECT OPTION AND ASSIGN VALUES
+                    var option      = document.createElement("option");
+                    option.text     = countries[key].id+' '+countries[key].currencyName;
+                    option.value    = countries[key].id;
+                    //APPEND TO PARENT
+                    currency2.appendChild(option);
+                    
+                    // Add to DB
+                    addcountries.put(countries[key]);
+                }
+            }
+
+            console.log('countries updated');
+
+        }
+
+    })
+    .catch((error) => {
+        console.log('Request failed', error)
+    });
+
+    // fetch currency update
+    dbrequest.onsuccess = function (evt) {
+
+        let db = dbrequest.result;
+        let transaction3 = db.transaction("currency", "readwrite");
+        let dbcurrency = transaction3.objectStore("currency");
+        let currencyRequest = dbcurrency.getAll();
+
+        currencyRequest.onsuccess = function() {
+
+            let dbdata = currencyRequest.result;
+
+            dbdata.forEach(function(currencyrecord) {
+
+                let updatequery = currencyrecord.id
+
+                updateurl = 'https://free.currencyconverterapi.com/api/v5/convert?q='+ updatequery;
+
+                fetch(updateurl)
+                .then((response) => response.json())
+                .then((data) => {
+                    
+                    let record = data.results;
+                    let result = record[updatequery];
+                    
+                    //Add to db
+                    let transaction2 = db.transaction("currency", "readwrite");
+                    let addcurrency = transaction2.objectStore("currency");
+                    addcurrency.put(result);
+
+                })
+                .catch((error) => {
+                    console.log('Request failed', error)
+                });
+            });
+
+            console.log('currency rates updated');
+        }
+    }
+
+}, false);
 
