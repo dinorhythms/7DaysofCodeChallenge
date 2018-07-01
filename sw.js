@@ -18,7 +18,9 @@ let pathsToCache = [
 self.addEventListener('install', function(e) {
     e.waitUntil(
         caches.open(cacheName).then(function(cache) {
-            return cache.addAll(pathsToCache);
+            return cache.addAll(pathsToCache).then(function() {
+                self.skipWaiting();
+              });
         }).catch(function(error) {
             console.error('Oops, something bad happened!', error);
         })
