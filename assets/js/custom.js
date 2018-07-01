@@ -37,90 +37,48 @@ if ('serviceWorker' in navigator) {
 
     createDB ();
     
-} 
+}
 
-// Get Countries
-getCountries();
+// Get Countries and append to document
+const currency1 = document.getElementById('fromCurrency');
+const currency2 = document.getElementById('toCurrency');
 
-function getCountries() {
-    const currency1 = document.getElementById('fromCurrency');
-    const currency2 = document.getElementById('toCurrency');
+const geturl = 'https://free.currencyconverterapi.com/api/v5/currencies';
 
-    const geturl = 'https://free.currencyconverterapi.com/api/v5/currencies';
+//get records in db to display
+let dbrequest = indexedDB.open("CurrencyDB", 1);
 
-    //get records in db to display
-    let dbrequest = indexedDB.open("CurrencyDB", 1);
+dbrequest.onsuccess = function (evt) {
 
-    dbrequest.onsuccess = function (evt) {
+    let db = dbrequest.result;
+    let transaction = db.transaction("countries", "readwrite");
+    let dbcountries = transaction.objectStore("countries");
+    let countRequest = dbcountries.count();
 
-        let db = dbrequest.result;
-        let transaction = db.transaction("countries", "readwrite");
-        let dbcountries = transaction.objectStore("countries");
-        let countRequest = dbcountries.count();
+    countRequest.onsuccess = function () {
+        
+        if(countRequest.result === 0) {
 
-        countRequest.onsuccess = function () {
-            
-            if(countRequest.result === 0) {
+            // No Record in DB, fetch record.
+            fetch(geturl)
+                .then((response) => response.json())
+                .then((data) => {
 
-                // No Record in DB, fetch record.
-                fetch(geturl)
-                    .then((response) => response.json())
-                    .then((data) => {
-
-                        let countries = data.results;
-
-                        for (var key in countries) {
-                            if (countries.hasOwnProperty(key)) {
-
-                                //CREATE A SELECT OPTION AND ASSIGN VALUES
-                                var option      = document.createElement("option");
-                                option.text     = countries[key].id;
-                                option.value    = countries[key].id;
-                                //APPEND TO PARENT
-                                currency1.appendChild(option);
-                                
-                                //CREATE A SELECT OPTION AND ASSIGN VALUES
-                                var option      = document.createElement("option");
-                                option.text     = countries[key].id;
-                                option.value    = countries[key].id;
-                                //APPEND TO PARENT
-                                currency2.appendChild(option);
-
-                                //Add to DB
-                                let transaction2 = db.transaction("countries", "readwrite");
-                                let addcountries = transaction2.objectStore("countries");
-                                addcountries.put(countries[key]);
-                            }
-                        }
-
-                    })
-                    .catch((error) => {
-                        console.log('Request failed', error)
-                    });
-            } else {
-                // Return DB Data
-                let transaction2 = db.transaction("countries", "readwrite");
-                let getcountries = transaction2.objectStore("countries");
-                let getRequest   = getcountries.getAll();
-
-                getRequest.onsuccess = function () {
-                    // console.log(getRequest.result);
-
-                    let countries = getRequest.result;
+                    let countries = data.results;
 
                     for (var key in countries) {
                         if (countries.hasOwnProperty(key)) {
 
                             //CREATE A SELECT OPTION AND ASSIGN VALUES
                             var option      = document.createElement("option");
-                            option.text     = countries[key].id;
+                            option.text     = countries[key].id+' '+countries[key].currencyName;
                             option.value    = countries[key].id;
                             //APPEND TO PARENT
                             currency1.appendChild(option);
                             
                             //CREATE A SELECT OPTION AND ASSIGN VALUES
                             var option      = document.createElement("option");
-                            option.text     = countries[key].id;
+                            option.text     = countries[key].id+' '+countries[key].currencyName;
                             option.value    = countries[key].id;
                             //APPEND TO PARENT
                             currency2.appendChild(option);
@@ -131,12 +89,49 @@ function getCountries() {
                             addcountries.put(countries[key]);
                         }
                     }
+
+                })
+                .catch((error) => {
+                    console.log('Request failed', error)
+                });
+        } else {
+            // Return DB Data
+            let transaction2 = db.transaction("countries", "readwrite");
+            let getcountries = transaction2.objectStore("countries");
+            let getRequest   = getcountries.getAll();
+
+            getRequest.onsuccess = function () {
+                // console.log(getRequest.result);
+
+                let countries = getRequest.result;
+
+                for (var key in countries) {
+                    if (countries.hasOwnProperty(key)) {
+
+                        //CREATE A SELECT OPTION AND ASSIGN VALUES
+                        var option      = document.createElement("option");
+                        option.text     = countries[key].id+' '+countries[key].currencyName;
+                        option.value    = countries[key].id;
+                        //APPEND TO PARENT
+                        currency1.appendChild(option);
+                        
+                        //CREATE A SELECT OPTION AND ASSIGN VALUES
+                        var option      = document.createElement("option");
+                        option.text     = countries[key].id+' '+countries[key].currencyName;
+                        option.value    = countries[key].id;
+                        //APPEND TO PARENT
+                        currency2.appendChild(option);
+
+                        //Add to DB
+                        let transaction2 = db.transaction("countries", "readwrite");
+                        let addcountries = transaction2.objectStore("countries");
+                        addcountries.put(countries[key]);
+                    }
                 }
             }
-            
         }
+        
     }
-
 }
 
 document.getElementById("convertbtn").onclick = function () { 

@@ -15,8 +15,8 @@ let pathsToCache = [
     './assets/js/custom.js',
 ];
 
-self.addEventListener('install', function(e) {
-    e.waitUntil(
+self.addEventListener('install', function(event) {
+    event.waitUntil(
         caches.open(cacheName).then(function(cache) {
             return cache.addAll(pathsToCache).then(function() {
                 self.skipWaiting();
