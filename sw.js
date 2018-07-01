@@ -1,7 +1,8 @@
 let cacheName = 'currency-cache-v1';
 let pathsToCache = [
-    '/7DaysofCodeChallenge/',
-    '/7DaysofCodeChallenge/index.html',
+    '/',
+    './7DaysofCodeChallenge/',
+    './index.html',
     '/7DaysofCodeChallenge/assets/',
     '/7DaysofCodeChallenge/assets/css/',
     '/7DaysofCodeChallenge/assets/css/bootstrap.min.css',
