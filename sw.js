@@ -1,19 +1,18 @@
 let cacheName = 'currency-cache-v1';
 let pathsToCache = [
-    '/',
-    './7DaysofCodeChallenge/',
+    './',
     './index.html',
-    '/7DaysofCodeChallenge/assets/',
-    '/7DaysofCodeChallenge/assets/css/',
-    '/7DaysofCodeChallenge/assets/css/bootstrap.min.css',
-    '/7DaysofCodeChallenge/assets/css/style.css',
-    '/7DaysofCodeChallenge/assets/images/',
-    '/7DaysofCodeChallenge/assets/images/double-arrow.png',
-    '/7DaysofCodeChallenge/assets/js/',
-    '/7DaysofCodeChallenge/assets/js/jquery-3.3.1.slim.min.js',
-    '/7DaysofCodeChallenge/assets/js/popper.min.js',
-    '/7DaysofCodeChallenge/assets/js/bootstrap.min.js',
-    '/7DaysofCodeChallenge/assets/js/custom.js',
+    './assets/',
+    './assets/css/',
+    './assets/css/bootstrap.min.css',
+    './assets/css/style.css',
+    './assets/images/',
+    './assets/images/double-arrow.png',
+    './assets/js/',
+    './assets/js/jquery-3.3.1.slim.min.js',
+    './assets/js/popper.min.js',
+    './assets/js/bootstrap.min.js',
+    './assets/js/custom.js',
 ];
 
 self.addEventListener('install', function(e) {
